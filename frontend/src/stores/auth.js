@@ -4,8 +4,8 @@ import axios from 'axios'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token') || '')
-  const userEmail = ref(localStorage.getItem('userEmail') || '')
-  const username = ref(localStorage.getItem('username') || '')
+  const userEmail = ref(localStorage.getItem('email') || '')
+  const userName = ref(localStorage.getItem('username') || '')
   const loading = ref(false)
   const error = ref('')
 
@@ -22,8 +22,10 @@ export const useAuthStore = defineStore('auth', () => {
       const res = await axios.post('/api/auth/login', { email, password })
       token.value = res.data.access_token
       userEmail.value = email
+      userName.value = res.data.username || ''
       localStorage.setItem('token', token.value)
-      localStorage.setItem('userEmail', email)
+      localStorage.setItem('email', email)
+      localStorage.setItem('username', userName.value)
       return true
     } catch (err) {
       error.value = err.response?.data?.trim() || err.message
@@ -42,7 +44,7 @@ export const useAuthStore = defineStore('auth', () => {
         email,
         password
       })
-      username.value = usernameVal
+      userName.value = usernameVal
       localStorage.setItem('username', usernameVal)
       return true
     } catch (err) {
@@ -59,9 +61,9 @@ export const useAuthStore = defineStore('auth', () => {
     } catch { /* ignore */ }
     token.value = ''
     userEmail.value = ''
-    username.value = ''
+    userName.value = ''
     localStorage.removeItem('token')
-    localStorage.removeItem('userEmail')
+    localStorage.removeItem('email')
     localStorage.removeItem('username')
   }
 
@@ -94,7 +96,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   return {
-    token, userEmail, username, loading, error, isLoggedIn, authHeaders,
+    token, userEmail, userName, loading, error, isLoggedIn, authHeaders,
     login, register, logout, forgotPassword, resetPassword
   }
 })
