@@ -97,12 +97,14 @@ func main() {
 	orderURL := getEnv("ORDER_SERVICE_URL", "http://order-service:8082")
 	bffURL := getEnv("BFF_SERVICE_URL", "http://bff-service:8083")
 	authURL := getEnv("AUTH_SERVICE_URL", "http://auth-service:8084")
+	adminURL := getEnv("ADMIN_SERVICE_URL", "http://admin-service:8088")
 
 	routes = []ServiceRoute{
 		{Name: "product", Prefix: "/api/products", TargetURL: productURL, TargetRoute: "/products"},
 		{Name: "order", Prefix: "/api/orders", TargetURL: orderURL, TargetRoute: "/orders"},
 		{Name: "bff", Prefix: "/api/bff", TargetURL: bffURL, TargetRoute: ""},
 		{Name: "auth", Prefix: "/api/auth", TargetURL: authURL, TargetRoute: ""},
+		{Name: "admin", Prefix: "/api/admin", TargetURL: adminURL, TargetRoute: ""},
 	}
 
 	for _, route := range routes {
@@ -115,6 +117,7 @@ func main() {
 
 	handler := requestIDMiddleware(loggingMiddleware(rateLimitMiddleware(authMiddleware(mux))))
 
+	log.Printf("GATEWAY VERSION 2 STARTING - SKIP AUTH ENABLED")
 	log.Printf("API Gateway starting on :%s", port)
 	err := http.ListenAndServe(":"+port, handler)
 	if err != nil {
@@ -159,9 +162,6 @@ func proxyRequest(w http.ResponseWriter, r *http.Request, route ServiceRoute) {
 	}
 
 	targetPath := strings.TrimPrefix(r.URL.Path, route.Prefix)
-	if targetPath == "" {
-		targetPath = "/"
-	}
 	downstreamURL := strings.TrimRight(route.TargetURL, "/") + route.TargetRoute + targetPath
 	if r.URL.RawQuery != "" {
 		downstreamURL += "?" + r.URL.RawQuery
@@ -240,6 +240,7 @@ func authMiddleware(next http.Handler) http.Handler {
 		if r.Method == http.MethodOptions || 
 		   r.URL.Path == "/health" || 
 		   strings.HasPrefix(r.URL.Path, "/api/auth") ||
+		   strings.HasPrefix(r.URL.Path, "/api/admin/login") ||
 		   strings.HasPrefix(r.URL.Path, "/auth") {
 			log.Printf("AuthMiddleware: Skipping auth for %s", r.URL.Path)
 			next.ServeHTTP(w, r)

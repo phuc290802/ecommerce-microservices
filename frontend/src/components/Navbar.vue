@@ -20,7 +20,7 @@
       <div class="navbar-user">
         <div class="user-info">
           <div class="user-avatar">{{ avatarLetter }}</div>
-          <span class="user-email">{{ auth.userEmail || 'User' }}</span>
+          <span class="user-email">{{ auth.userName || auth.userEmail || 'User' }}</span>
         </div>
         <button class="btn btn-secondary btn-sm" @click="handleLogout">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -40,7 +40,7 @@ const auth = useAuthStore()
 const router = useRouter()
 
 const avatarLetter = computed(() => {
-  return (auth.userEmail || auth.username || 'U').charAt(0).toUpperCase()
+  return (auth.userName || auth.userEmail || 'U').charAt(0).toUpperCase()
 })
 
 const handleLogout = async () => {

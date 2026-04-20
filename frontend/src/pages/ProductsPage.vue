@@ -2,21 +2,26 @@
   <div class="page-container">
     <!-- Header -->
     <div class="section-header">
-      <div>
+      <div class="header-main">
         <h1 class="page-title">🛍️ Sản phẩm</h1>
         <p class="page-subtitle">Khám phá tất cả sản phẩm của chúng tôi</p>
       </div>
-      <div class="flex gap-2 items-center">
-        <input
-          v-model="search"
-          class="form-input"
-          style="width: 220px"
-          placeholder="Tìm kiếm..."
-        />
-        <select v-model="categoryFilter" class="form-select" style="width: 160px">
-          <option value="">Tất cả danh mục</option>
-          <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
-        </select>
+      <div class="filter-actions-row">
+        <div class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input
+            v-model="search"
+            class="custom-input"
+            placeholder="Tìm kiếm sản phẩm..."
+          />
+        </div>
+        <div class="select-wrapper">
+          <select v-model="categoryFilter" class="custom-select">
+            <option value="">Tất cả danh mục</option>
+            <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+          </select>
+          <span class="select-arrow">▾</span>
+        </div>
       </div>
     </div>
 
@@ -163,6 +168,78 @@ onMounted(loadAll)
 </script>
 
 <style scoped>
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2.5rem;
+  gap: 1.5rem;
+}
+
+.filter-actions-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.search-wrapper, .select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.875rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.custom-input, .custom-select {
+  background: rgba(15, 22, 41, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 42px;
+}
+
+.custom-input {
+  width: 260px;
+  padding: 0 1rem 0 2.5rem;
+}
+
+.custom-select {
+  width: 180px;
+  padding: 0 2.5rem 0 1rem;
+  appearance: none;
+  cursor: pointer;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 1rem;
+  pointer-events: none;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+
+.custom-input:focus, .custom-select:focus {
+  outline: none;
+  border-color: var(--accent-light);
+  background: rgba(15, 22, 41, 0.8);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.custom-select option {
+  background: #0f1629;
+  color: var(--text-primary);
+}
+
 .loading-state {
   text-align: center;
   padding: 5rem 2rem;
@@ -179,6 +256,13 @@ onMounted(loadAll)
   gap: 0;
   padding: 0;
   overflow: hidden;
+  border-radius: 20px; /* Bo tròn mạnh hơn */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
 }
 
 .product-image {

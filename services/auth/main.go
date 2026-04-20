@@ -200,7 +200,11 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	})
 
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string]any{"access_token": token, "expires_in": 900})
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"access_token": token, 
+		"expires_in":   900,
+		"username":     user.Username,
+	})
 }
 
 func handleRefresh(w http.ResponseWriter, r *http.Request) {
