@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from './stores/auth'
+import { useAdminStore } from './stores/admin'
 
 const routes = [
   { path: '/', redirect: '/products' },
@@ -34,6 +35,20 @@ const routes = [
     meta: { guest: true }
   },
   {
+    path: '/admin/login',
+    component: () => import('./pages/admin/AdminLogin.vue'),
+    meta: { adminGuest: true }
+  },
+  {
+    path: '/admin',
+    component: () => import('./layouts/AdminLayout.vue'),
+    meta: { requiresAdmin: true },
+    children: [
+      { path: '', component: () => import('./pages/admin/AdminDashboard.vue') },
+      { path: 'users', component: () => import('./pages/admin/AdminUsers.vue') },
+    ]
+  },
+  {
     path: '/reset-password',
     component: () => import('./pages/ResetPasswordPage.vue'),
     meta: { guest: true }
@@ -48,6 +63,13 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const auth = useAuthStore()
+  const admin = useAdminStore()
+
+  // Admin Guards
+  if (to.meta.requiresAdmin && !admin.isAdminAuthenticated) return '/admin/login'
+  if (to.meta.adminGuest && admin.isAdminAuthenticated) return '/admin'
+
+  // User Guards
   if (to.meta.requiresAuth && !auth.token) return '/login'
   if (to.meta.guest && auth.token) return '/products'
 })
