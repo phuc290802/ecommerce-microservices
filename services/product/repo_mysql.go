@@ -34,11 +34,26 @@ func NewMySQLRepo(dsn string) (*MySQLRepo, error) {
 }
 
 func initializeSchema(db *sql.DB) error {
-	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS products (
+	// Check if emoji column exists
+	var columnCount int
+	err := db.QueryRow("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'emoji'").Scan(&columnCount)
+	if err != nil {
+		return fmt.Errorf("failed to check emoji column: %w", err)
+	}
+
+	if columnCount == 0 {
+		_, err := db.Exec(`ALTER TABLE products ADD COLUMN emoji VARCHAR(10) DEFAULT '📦'`)
+		if err != nil {
+			return fmt.Errorf("failed to add emoji column: %w", err)
+		}
+	}
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS products (
         id BIGINT PRIMARY KEY AUTO_INCREMENT,
         name VARCHAR(255) NOT NULL,
         price DECIMAL(10,2) NOT NULL,
         category_id BIGINT NOT NULL DEFAULT 1,
+        emoji VARCHAR(10) DEFAULT '📦',
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`)
 	if err != nil {
@@ -52,15 +67,15 @@ func initializeSchema(db *sql.DB) error {
 
 	if count == 0 {
 		sampleProducts := []Product{
-			{Name: "Basic T-shirt", Price: 19.99, CategoryID: 1},
-			{Name: "Sneakers", Price: 59.99, CategoryID: 2},
-			{Name: "Coffee Mug", Price: 9.99, CategoryID: 3},
+			{Name: "Basic T-shirt", Price: 19.99, CategoryID: 1, Emoji: "👕"},
+			{Name: "Sneakers", Price: 59.99, CategoryID: 2, Emoji: "👟"},
+			{Name: "Coffee Mug", Price: 9.99, CategoryID: 3, Emoji: "☕"},
 		}
 
 		for _, p := range sampleProducts {
 			_, err := db.Exec(
-				"INSERT INTO products (name, price, category_id) VALUES (?, ?, ?)",
-				p.Name, p.Price, p.CategoryID,
+				"INSERT INTO products (name, price, category_id, emoji) VALUES (?, ?, ?, ?)",
+				p.Name, p.Price, p.CategoryID, p.Emoji,
 			)
 			if err != nil {
 				return err
@@ -72,7 +87,7 @@ func initializeSchema(db *sql.DB) error {
 }
 
 func (r *MySQLRepo) List() ([]Product, error) {
-	rows, err := r.db.Query("SELECT id, name, price, category_id, created_at FROM products ORDER BY id")
+	rows, err := r.db.Query("SELECT id, name, price, category_id, emoji, created_at FROM products ORDER BY id")
 	if err != nil {
 		return nil, fmt.Errorf("failed to query products: %w", err)
 	}
@@ -82,7 +97,7 @@ func (r *MySQLRepo) List() ([]Product, error) {
 	for rows.Next() {
 		var p Product
 		var createdAt time.Time
-		if err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.CategoryID, &createdAt); err != nil {
+		if err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.CategoryID, &p.Emoji, &createdAt); err != nil {
 			return nil, fmt.Errorf("failed to scan product: %w", err)
 		}
 		p.CreatedAt = createdAt.Format(time.RFC3339)
@@ -101,9 +116,9 @@ func (r *MySQLRepo) GetByID(id int64) (Product, error) {
 	var createdAt time.Time
 
 	err := r.db.QueryRow(
-		"SELECT id, name, price, category_id, created_at FROM products WHERE id = ?",
+		"SELECT id, name, price, category_id, emoji, created_at FROM products WHERE id = ?",
 		id,
-	).Scan(&p.ID, &p.Name, &p.Price, &p.CategoryID, &createdAt)
+	).Scan(&p.ID, &p.Name, &p.Price, &p.CategoryID, &p.Emoji, &createdAt)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -118,8 +133,8 @@ func (r *MySQLRepo) GetByID(id int64) (Product, error) {
 
 func (r *MySQLRepo) Create(product Product) (Product, error) {
 	result, err := r.db.Exec(
-		"INSERT INTO products (name, price, category_id) VALUES (?, ?, ?)",
-		product.Name, product.Price, product.CategoryID,
+		"INSERT INTO products (name, price, category_id, emoji) VALUES (?, ?, ?, ?)",
+		product.Name, product.Price, product.CategoryID, product.Emoji,
 	)
 	if err != nil {
 		return Product{}, fmt.Errorf("failed to create product: %w", err)
@@ -137,8 +152,8 @@ func (r *MySQLRepo) Create(product Product) (Product, error) {
 
 func (r *MySQLRepo) Update(product Product) (bool, error) {
 	result, err := r.db.Exec(
-		"UPDATE products SET name = ?, price = ?, category_id = ? WHERE id = ?",
-		product.Name, product.Price, product.CategoryID, product.ID,
+		"UPDATE products SET name = ?, price = ?, category_id = ?, emoji = ? WHERE id = ?",
+		product.Name, product.Price, product.CategoryID, product.Emoji, product.ID,
 	)
 	if err != nil {
 		return false, fmt.Errorf("failed to update product: %w", err)

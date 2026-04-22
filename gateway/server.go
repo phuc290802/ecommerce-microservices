@@ -239,11 +239,11 @@ func authMiddleware(next http.Handler) http.Handler {
 		// 1. Allow OPTIONS requests (CORS preflight)
 		// 2. Allow /health
 		// 3. Allow everything under /api/auth (login, register, forgot-password, etc.)
-		if r.Method == http.MethodOptions || 
-		   r.URL.Path == "/health" || 
-		   strings.HasPrefix(r.URL.Path, "/api/auth") ||
-		   strings.HasPrefix(r.URL.Path, "/api/admin/login") ||
-		   strings.HasPrefix(r.URL.Path, "/auth") {
+		if r.Method == http.MethodOptions ||
+			r.URL.Path == "/health" ||
+			strings.HasPrefix(r.URL.Path, "/api/auth") ||
+			strings.HasPrefix(r.URL.Path, "/api/admin/login") ||
+			strings.HasPrefix(r.URL.Path, "/auth") {
 			log.Printf("AuthMiddleware: Skipping auth for %s", r.URL.Path)
 			next.ServeHTTP(w, r)
 			return

@@ -5,5 +5,6 @@ type Product struct {
 	Name       string  `json:"name"`
 	Price      float64 `json:"price"`
 	CategoryID int64   `json:"category_id"`
+	Emoji      string  `json:"emoji"`
 	CreatedAt  string  `json:"created_at"`
 }
