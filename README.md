@@ -4,7 +4,12 @@
 - API Gateway bằng Go
 - Product service bằng Go (MySQL optional)
 - Order service bằng Go
-- Frontend VueJS với Vite
+- Category service bằng Go (MySQL + Redis)
+- Auth service bằng Go
+- BFF service bằng Go
+- Admin service bằng Go
+- Review service bằng Go
+- Stock service bằng Go
 - Docker Compose để chạy toàn bộ hệ thống
 
 ## Chạy nhanh
@@ -16,16 +21,25 @@ docker compose up --build
 ```
 
 Sau khi chạy xong:
-- Frontend: http://localhost:5173
 - API Gateway: http://localhost:8080
 - Product service: http://localhost:8081
 - Order service: http://localhost:8082
+- Category service: http://localhost:8085
+- Auth service: http://localhost:8084
+- BFF service: http://localhost:8083
+- Admin service: http://localhost:8088
+- Review service: http://localhost:8086
+- Stock service: http://localhost:8087
 
 ## API Gateway
 
 Gateway proxy các đường dẫn:
 - `/api/products` -> Product service
 - `/api/orders` -> Order service
+- `/api/categories` -> Category service
+- `/api/bff` -> BFF service
+- `/api/auth` -> Auth service
+- `/api/admin` -> Admin service
 
 Các tính năng đã triển khai:
 - Validate JWT (chỉ kiểm tra hạn, không gọi DB)

@@ -95,6 +95,7 @@ func main() {
 
 	productURL := getEnv("PRODUCT_SERVICE_URL", "http://product-service:8081")
 	orderURL := getEnv("ORDER_SERVICE_URL", "http://order-service:8082")
+	categoryURL := getEnv("CATEGORY_SERVICE_URL", "http://category-service:8085")
 	bffURL := getEnv("BFF_SERVICE_URL", "http://bff-service:8083")
 	authURL := getEnv("AUTH_SERVICE_URL", "http://auth-service:8084")
 	adminURL := getEnv("ADMIN_SERVICE_URL", "http://admin-service:8088")
@@ -102,6 +103,7 @@ func main() {
 	routes = []ServiceRoute{
 		{Name: "product", Prefix: "/api/products", TargetURL: productURL, TargetRoute: "/products"},
 		{Name: "order", Prefix: "/api/orders", TargetURL: orderURL, TargetRoute: "/orders"},
+		{Name: "category", Prefix: "/api/categories", TargetURL: categoryURL, TargetRoute: "/categories"},
 		{Name: "bff", Prefix: "/api/bff", TargetURL: bffURL, TargetRoute: ""},
 		{Name: "auth", Prefix: "/api/auth", TargetURL: authURL, TargetRoute: ""},
 		{Name: "admin", Prefix: "/api/admin", TargetURL: adminURL, TargetRoute: ""},
@@ -237,11 +239,11 @@ func authMiddleware(next http.Handler) http.Handler {
 		// 1. Allow OPTIONS requests (CORS preflight)
 		// 2. Allow /health
 		// 3. Allow everything under /api/auth (login, register, forgot-password, etc.)
-		if r.Method == http.MethodOptions || 
-		   r.URL.Path == "/health" || 
-		   strings.HasPrefix(r.URL.Path, "/api/auth") ||
-		   strings.HasPrefix(r.URL.Path, "/api/admin/login") ||
-		   strings.HasPrefix(r.URL.Path, "/auth") {
+		if r.Method == http.MethodOptions ||
+			r.URL.Path == "/health" ||
+			strings.HasPrefix(r.URL.Path, "/api/auth") ||
+			strings.HasPrefix(r.URL.Path, "/api/admin/login") ||
+			strings.HasPrefix(r.URL.Path, "/auth") {
 			log.Printf("AuthMiddleware: Skipping auth for %s", r.URL.Path)
 			next.ServeHTTP(w, r)
 			return
