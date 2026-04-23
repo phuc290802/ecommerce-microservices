@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init-sql
+data:
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS ecommerce;
+    USE ecommerce;
+
+    CREATE TABLE IF NOT EXISTS products (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255),
+      price DECIMAL(10,2),
+      category_id INT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      emoji VARCHAR(10)
+    );
+
+    CREATE TABLE IF NOT EXISTS users (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      username VARCHAR(255),
+      email VARCHAR(255),
+      phone VARCHAR(50),
+      password_hash VARCHAR(255),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS stock (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      product_id INT,
+      quantity INT,
+      reserved INT,
+      available INT,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS administrators (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      username VARCHAR(255),
+      email VARCHAR(255),
+      password_hash VARCHAR(255),
+      role VARCHAR(50),
+      status VARCHAR(50),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- seed data
+    INSERT INTO products (name, price, category_id, emoji) VALUES
+    ('Basic T-shirt', 19.99, 1, '?'),
+    ('Sneakers', 59.99, 2, '?'),
+    ('Coffee Mug', 9.99, 3, '?'),
+    ('Denim Jacket', 49.99, 1, '?'),
+    ('Backpack', 29.99, 2, '?'),
+    ('Water Bottle', 14.99, 4, '?');
+
+    INSERT INTO users (username, email, phone, password_hash) VALUES
+    ('user1', 'user1@test.com', '', '$2a$12$jqWsqyfSIBjgyKWwDz7JXedgIaalCRwKFmlQyIeF8DYLgds3FGBga');
+
+    INSERT INTO stock (product_id, quantity, reserved, available) VALUES
+    (1,100,0,100),
+    (2,50,0,50),
+    (3,200,0,200),
+    (4,75,0,75),
+    (5,30,0,30),
+    (6,150,0,150);
+
+    INSERT INTO administrators (username,email,password_hash,role,status) VALUES
+    ('superadmin','admin@shopverse.com','admin123','super_admin','active');
