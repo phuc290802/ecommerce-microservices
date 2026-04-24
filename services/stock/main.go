@@ -16,7 +16,10 @@ type Stock struct {
 var stockData = []Stock{
 	{ProductID: 1, Available: true, Quantity: 24},
 	{ProductID: 2, Available: true, Quantity: 12},
-	{ProductID: 3, Available: false, Quantity: 0},
+	{ProductID: 3, Available: true, Quantity: 200},
+	{ProductID: 4, Available: true, Quantity: 75},
+	{ProductID: 5, Available: true, Quantity: 30},
+	{ProductID: 6, Available: true, Quantity: 150},
 }
 
 func main() {

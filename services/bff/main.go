@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"math/big"
 	"net/http"
@@ -116,6 +117,7 @@ func main() {
 	mux.HandleFunc("/health", handleHealth)
 	mux.HandleFunc("/summary", handleSummary)
 	mux.HandleFunc("/graphql", handleGraphQL)
+	mux.HandleFunc("/api/cart", proxyCartService)
 
 	addr := ":" + port
 	log.Printf("BFF service starting on %s", addr)
@@ -259,6 +261,39 @@ func handleGraphQL(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(result)
+}
+
+func proxyCartService(w http.ResponseWriter, r *http.Request) {
+	cartURL := getEnv("CART_SERVICE_URL", "http://cart-service:8090")
+	proxyURL := cartURL + r.URL.Path[len("/api/cart"):]
+
+	// Forward all methods, query params, headers (except host)
+	req, err := http.NewRequest(r.Method, proxyURL, r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+
+	// Copy headers
+	for k, v := range r.Header {
+		req.Header[k] = v
+	}
+	req.Header.Del("Host")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Copy response
+	for k, v := range resp.Header {
+		w.Header()[k] = v
+	}
+	w.WriteHeader(resp.StatusCode)
+	io.Copy(w, resp.Body)
 }
 
 func aggregateSummary(productID string) (*SummaryResponse, error) {
